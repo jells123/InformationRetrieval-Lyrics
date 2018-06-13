@@ -48,7 +48,7 @@ public class Searcher
             System.out.println("1) term query: mammal (CONTENT)");
 
             String queryMammalNorm = analyzer.normalize("fieldName?", queryMammal).utf8ToString();
-            Term term = new Term(Constants.content, queryMammalNorm);
+            Term term = new Term(Constants.lyrics, queryMammalNorm);
             tq1 = new TermQuery(term);
 
             printResultsForQuery(indexSearcher, tq1);
@@ -64,7 +64,7 @@ public class Searcher
             System.out.println("2) term query bird (CONTENT)");
 
             String queryBirdNorm = analyzer.normalize("fieldName?", queryBird).utf8ToString();
-            Term term = new Term(Constants.content, queryBirdNorm);
+            Term term = new Term(Constants.lyrics, queryBirdNorm);
             tq2 = new TermQuery(term);
 
             printResultsForQuery(indexSearcher, tq2);
@@ -98,7 +98,7 @@ public class Searcher
         {
             // --------------------------------------
             System.out.println("4) range query: file size in [0b, 1000b]");
-            Query rangeQuery = IntPoint.newRangeQuery(Constants.filesize_int, 0, 1000);
+            Query rangeQuery = IntPoint.newRangeQuery(Constants.songsize_int, 0, 1000);
             printResultsForQuery(indexSearcher, rangeQuery);
             // --------------------------------------
         }
@@ -108,7 +108,7 @@ public class Searcher
         {
             // --------------------------------------
             System.out.println("5) Prefix query (FILENAME): ant");
-            Term prefix = new Term(Constants.filename, "ant");
+            Term prefix = new Term(Constants.songname, "ant");
             PrefixQuery pq = new PrefixQuery(prefix);
             printResultsForQuery(indexSearcher, pq);
             // --------------------------------------
@@ -120,7 +120,7 @@ public class Searcher
         {
             // --------------------------------------
             System.out.println("6) Wildcard query (CONTENT): eat?");
-            Term wildcard = new Term(Constants.content, "eat?");
+            Term wildcard = new Term(Constants.lyrics, "eat?");
             WildcardQuery wq = new WildcardQuery(wildcard);
             printResultsForQuery(indexSearcher, wq);
             // --------------------------------------
@@ -132,7 +132,7 @@ public class Searcher
         {
             // --------------------------------------
             System.out.println("7) Fuzzy querry (CONTENT): mamml?");
-            Term fuzzy = new Term(Constants.content, "mamml");
+            Term fuzzy = new Term(Constants.lyrics, "mamml");
             FuzzyQuery fq = new FuzzyQuery(fuzzy);
             printResultsForQuery(indexSearcher, fq);
             // --------------------------------------
@@ -159,7 +159,7 @@ public class Searcher
             // --------------------------------------
             System.out.println("8) query parser = " + selectedQuery);
             try {
-                QueryParser qp = new QueryParser(Constants.content, analyzer);
+                QueryParser qp = new QueryParser(Constants.lyrics, analyzer);
                 Query q = qp.parse(selectedQuery);
                 printResultsForQuery(indexSearcher, q);
             } catch (ParseException e) {
@@ -199,8 +199,8 @@ public class Searcher
             for (ScoreDoc sd : topDocs.scoreDocs) {
                 Document doc = indexSearcher.doc(sd.doc);
                 System.out.format("%f: %s (Id=%s) (Content=%s) (Size=%sb)\n",
-                        sd.score, doc.get(Constants.filename), doc.get(Constants.id),
-                        doc.get(Constants.content), doc.get(Constants.filesize));
+                        sd.score, doc.get(Constants.songname), doc.get(Constants.id),
+                        doc.get(Constants.lyrics), doc.get(Constants.songsize));
             }
         } catch (IOException e) {
             e.printStackTrace();

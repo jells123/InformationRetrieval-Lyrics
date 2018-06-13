@@ -17,26 +17,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class Indexer
-{
-    public static void main(String args[])
-    {
+public class Indexer {
+    public static void main(String args[]) {
         Indexer indexer = new Indexer();
         indexer.indexDocuments();
     }
 
-    private void indexDocuments()
-    {
+    private void indexDocuments() {
         // REMOVE PREVIOUSLY GENERATED INDEX (DONE)
-        try
-        {
+        try {
             FileUtils.deleteDirectory(new File(Constants.index_dir));
-        } catch (IOException ignored)
-        {
+        } catch (IOException ignored) {
         }
 
-        // LOAD HTML DOCUMENTS (TODO)
-        ArrayList<Document> documents = getHTMLDocuments();
+        // LOAD DOCUMENTS (TODO)
+        ArrayList<Document> documents = getJsonDocuments();
 
         // CONSTRUCT INDEX (TODO)
         // - Firstly, create Analyzer object (StandardAnalyzer).
@@ -64,7 +59,7 @@ public class Indexer
     }
 
 
-    private ArrayList<Document> getHTMLDocuments()
+    /*private ArrayList<Document> getHTMLDocuments()
     {
         // This method is finished. Find getHTMLDocument
         File dir = new File("pages");
@@ -81,9 +76,42 @@ public class Indexer
             return htmls;
         }
         return null;
+    }*/
+
+    private ArrayList<Document> getJsonDocuments() {
+        JsonReader.getInstance().loadData("songfile.json");
+        ArrayList<Song> songs = JsonReader.getInstance().getSongs();
+
+        ArrayList<Document> documents = new ArrayList<>(songs.size());
+        for (int id = 0; id < songs.size(); id++) {
+            System.out.println("Loading " + songs.get(id).getTitle());
+            documents.add(getJsonDocument(songs.get(id), id));
+        }
+        return documents;
     }
 
-    private Document getHTMLDocument(String path, int id)
+    private Document getJsonDocument(Song song, int id) {
+        Document document = new Document();
+        StoredField idField = new StoredField(Constants.id, id);
+
+        String content = song.getLyrics();
+        TextField contentField = new TextField(Constants.lyrics, content, Field.Store.NO);
+        TextField fnameField = new TextField(Constants.songname, song.getTitle(), Field.Store.YES);
+        TextField fartistField = new TextField(Constants.songartist, song.getArtist(), Field.Store.YES);
+        Field fileSizeField_int = new IntPoint(Constants.songsize_int, (int) content.length());
+        Field fileSizeField = new StoredField(Constants.songsize, (int) content.length());
+
+        document.add(idField);
+        document.add(contentField);
+        document.add(fnameField);
+        document.add(fartistField);
+        document.add(fileSizeField_int);
+        document.add(fileSizeField);
+
+        return document;
+    }
+
+    /*private Document getHTMLDocument(String path, int id)
     {
         File file = new File(path);
         Document document = new Document();
@@ -108,7 +136,7 @@ public class Indexer
         Values may be text (String, Reader or pre-analyzed TokenStream),
         binary (byte[]), or numeric (a Number). Fields are optionally
         stored in the index, so that they may be returned with hits on the document.
-        */
+
 
         // STORED + INDEXED = field is searchable and results may be highlighted
         // (e.g., document's title may be presented because original content is stored)
@@ -166,16 +194,13 @@ public class Indexer
     }
 
     // (DONE)
-    private String getTextFromHTMLFile(File file)
-    {
+    private String getTextFromHTMLFile(File file) {
         BodyContentHandler handler = new BodyContentHandler();
         Metadata metadata = new Metadata();
         FileInputStream inputStream;
-        try
-        {
+        try {
             inputStream = new FileInputStream(file);
-        } catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             return null;
         }
@@ -184,15 +209,13 @@ public class Indexer
 
         //Html parser
         HtmlParser htmlparser = new HtmlParser();
-        try
-        {
+        try {
             htmlparser.parse(inputStream, handler, metadata, pContext);
-        } catch (IOException | SAXException | TikaException e)
-        {
+        } catch (IOException | SAXException | TikaException e) {
             e.printStackTrace();
         }
 
         return handler.toString();
-    }
+    }*/
 
 }
