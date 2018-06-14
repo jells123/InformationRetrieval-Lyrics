@@ -14,16 +14,19 @@ import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Searcher {
 
     public static void main(String args[]) {
-        IndexReader reader = getIndexReader();
+        /*IndexReader reader = getIndexReader();
         assert reader != null;
         IndexSearcher indexSearcher = new IndexSearcher(reader);
         Analyzer analyzer = new StandardAnalyzer();
 
-        String queryMammal = "motherfucker";                // XD
+        String queryMammal = "motherfucker";
         TermQuery tq1;
         {
             System.out.println("1) term query: motherfucker (CONTENT)");
@@ -59,18 +62,17 @@ public class Searcher {
         }
 
         {
-            System.out.println("7) Fuzzy querry (CONTENT): gasolin?");
+            System.out.println("3) Fuzzy querry (CONTENT): gasolin?");
             Term fuzzy = new Term(Constants.lyrics, "gasolin");
             FuzzyQuery fq = new FuzzyQuery(fuzzy);
             printResultsForQuery(indexSearcher, fq);
         }
 
-        String queryP1 = "(\"fuck you\"~10) OR bat";
-        String queryP2 = "(\"God bless your soul\"~10) OR (\"are loved\"~10)";
+        String queryP = "(\"God bless your soul\"~10) OR (\"fuck you\"~10)";
 
-        String selectedQuery = queryP2;
+        String selectedQuery = queryP;
         {
-            System.out.println("8) query parser = " + selectedQuery);
+            System.out.println("4) query parser = " + selectedQuery);
             try {
                 QueryParser qp = new QueryParser(Constants.lyrics, analyzer);
                 Query q = qp.parse(selectedQuery);
@@ -79,6 +81,51 @@ public class Searcher {
                 e.printStackTrace();
             }
         }
+
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+
+        searchResultsForQuery("motherfucker kills");
+    }
+
+    public static void searchResultsForQuery(String query) {
+        WordNet wordNet = new WordNet();
+        HashMap<String, ArrayList<String>> words = wordNet.getSimilarWords(query);
+        Analyzer analyzer = new StandardAnalyzer();
+
+        IndexReader reader = getIndexReader();
+        assert reader != null;
+        IndexSearcher indexSearcher = new IndexSearcher(reader);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Map.Entry<String, ArrayList<String>> entry : words.entrySet()) {
+            String keyword = entry.getKey();
+            ArrayList<String> synonyms = entry.getValue();
+            sb.append("(\"").append(keyword).append("\" OR \"");
+
+            for (String s : synonyms) {
+                sb.append(s).append("\" OR \"");
+            }
+            sb.delete(sb.toString().length() - 6, sb.toString().length() - 1);
+            sb.append(") AND ");
+        }
+        sb.delete(sb.toString().length() - 4, sb.toString().length() - 1);
+
+        String selectedQuery = sb.toString();
+        System.out.println("Query parser = " + selectedQuery);
+
+        try {
+            QueryParser qp = new QueryParser(Constants.lyrics, analyzer);
+            Query q = qp.parse(selectedQuery);
+            printResultsForQuery(indexSearcher, q);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
 
         try {
             reader.close();
@@ -94,8 +141,8 @@ public class Searcher {
                 Document doc = indexSearcher.doc(sd.doc);
                 System.out.format("%f: %s (Id=%s) (Artist=%s) (Location=%s, %s, %s) (Size=%sb)\n",
                         sd.score, doc.get(Constants.songname), doc.get(Constants.id),
-                        doc.get(Constants.songartist),doc.get(Constants.country),doc.get(Constants.province),
-                        doc.get(Constants.city),doc.get(Constants.songsize));
+                        doc.get(Constants.songartist), doc.get(Constants.country), doc.get(Constants.province),
+                        doc.get(Constants.city), doc.get(Constants.songsize));
             }
         } catch (IOException e) {
             e.printStackTrace();

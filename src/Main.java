@@ -8,5 +8,6 @@ public class Main {
         for(Song s : songs) {
             System.out.println(s.toString());
         }
+
     }
 }

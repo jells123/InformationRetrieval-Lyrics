@@ -3,16 +3,10 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.html.HtmlParser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.xml.sax.SAXException;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,25 +18,12 @@ public class Indexer {
     }
 
     private void indexDocuments() {
-        // REMOVE PREVIOUSLY GENERATED INDEX (DONE)
         try {
             FileUtils.deleteDirectory(new File(Constants.index_dir));
         } catch (IOException ignored) {
         }
-
-        // LOAD DOCUMENTS (TODO)
         ArrayList<Document> documents = getJsonDocuments();
 
-        // CONSTRUCT INDEX (TODO)
-        // - Firstly, create Analyzer object (StandardAnalyzer).
-        //   (An Analyzer builds TokenStreams, which analyze text.
-        //   It thus represents a policy for extracting index terms from text.)
-        // - Then, create IndexWriterConfig object that uses standard analyzer
-        // - Construct IndexWriter (you can use FSDirectory.open and Paths.get + Constants.index_dir
-        // - Add documents to the index
-        // - Commit and close the index.
-
-        // ----------------------------------
         StandardAnalyzer std = new StandardAnalyzer();
         IndexWriterConfig idxWriteConf = new IndexWriterConfig(std);
         Path p = Paths.get(Constants.index_dir);
@@ -54,29 +35,7 @@ public class Indexer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // ----------------------------------
-
     }
-
-
-    /*private ArrayList<Document> getHTMLDocuments()
-    {
-        // This method is finished. Find getHTMLDocument
-        File dir = new File("pages");
-        File[] files = dir.listFiles();
-        if (files != null)
-        {
-            ArrayList<Document> htmls = new ArrayList<>(files.length);
-            for (int id = 0; id < files.length; id++)
-            {
-                System.out.println("Loading "+ files[id].getName());
-                // TODO finish getHTML document
-                htmls.add(getHTMLDocument("pages/" + files[id].getName(), id));
-            }
-            return htmls;
-        }
-        return null;
-    }*/
 
     private ArrayList<Document> getJsonDocuments() {
         JsonReader.getInstance().loadData("songfile.json");
