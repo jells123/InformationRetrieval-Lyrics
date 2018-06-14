@@ -11,6 +11,7 @@ public class Constants
     public static final String country = "country";
     public static final String province = "province";
     public static final String city = "city";
+    public static final String language = "language";
     public static final String index_dir = "index";
     public static final int top_docs = 15;
 }

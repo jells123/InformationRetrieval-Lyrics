@@ -1,3 +1,4 @@
+import opennlp.tools.langdetect.Language;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -53,6 +54,9 @@ public class Indexer {
         Document document = new Document();
         StoredField idField = new StoredField(Constants.id, id);
 
+        MyLanguageDetector.initModel();
+        Language[] predictLanguages = MyLanguageDetector.get_languageDetector().predictLanguages(song.getLyrics());
+
         String content = song.getLyrics();
         TextField contentField = new TextField(Constants.lyrics, content, Field.Store.NO);
         TextField fnameField = new TextField(Constants.songname, song.getTitle(), Field.Store.YES);
@@ -60,6 +64,7 @@ public class Indexer {
         TextField fcountryField = new TextField(Constants.country, song.getCountry(), Field.Store.YES);
         TextField fprovinceField = new TextField(Constants.province, song.getProvince(), Field.Store.YES);
         TextField fcityField = new TextField(Constants.city, song.getCity(), Field.Store.YES);
+        TextField flanguage = new TextField(Constants.language, predictLanguages[0].getLang(), Field.Store.YES);
         Field fileSizeField_int = new IntPoint(Constants.songsize_int, (int) content.length());
         Field fileSizeField = new StoredField(Constants.songsize, (int) content.length());
 
@@ -70,6 +75,7 @@ public class Indexer {
         document.add(fcountryField);
         document.add(fprovinceField);
         document.add(fcityField);
+        document.add(flanguage);
         document.add(fileSizeField_int);
         document.add(fileSizeField);
 
