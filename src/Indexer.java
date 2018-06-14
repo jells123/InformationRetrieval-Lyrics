@@ -96,6 +96,7 @@ public class Indexer {
 
         String content = song.getLyrics();
         TextField contentField = new TextField(Constants.lyrics, content, Field.Store.NO);
+        //System.err.println(contentField.toString());
         TextField fnameField = new TextField(Constants.songname, song.getTitle(), Field.Store.YES);
         TextField fartistField = new TextField(Constants.songartist, song.getArtist(), Field.Store.YES);
         Field fileSizeField_int = new IntPoint(Constants.songsize_int, (int) content.length());

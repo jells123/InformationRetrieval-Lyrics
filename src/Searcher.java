@@ -15,10 +15,9 @@ import org.apache.lucene.util.BytesRef;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class Searcher
-{
+public class Searcher {
 
-    public static void main(String args[])
+    /*public static void main(String args[])
     {
         // Load the previously generated index (DONE)
         IndexReader reader = getIndexReader();
@@ -177,10 +176,102 @@ public class Searcher
         {
             e.printStackTrace();
         }
+    }*/
+
+    public static void main(String args[]) {
+        IndexReader reader = getIndexReader();
+        assert reader != null;
+        IndexSearcher indexSearcher = new IndexSearcher(reader);
+        Analyzer analyzer = new StandardAnalyzer();
+
+        // BooleanQuery
+        String queryMammal = "motherfucker";                // XD
+        TermQuery tq1;
+        {
+            System.out.println("1) term query: motherfucker (CONTENT)");
+
+            String queryMammalNorm = analyzer.normalize("fieldName?", queryMammal).utf8ToString();
+            Term term = new Term(Constants.lyrics, queryMammalNorm);
+            tq1 = new TermQuery(term);
+
+            printResultsForQuery(indexSearcher, tq1);
+        }
+
+        String queryBird = "Charlie";
+        queryMammal = "Mack";
+
+        TermQuery tq2;
+        {
+            System.out.println("2) term query Charlie Mack (CONTENT)");
+
+            String queryMammalNorm = analyzer.normalize("fieldName?", queryMammal).utf8ToString();
+            Term term1 = new Term(Constants.lyrics, queryMammalNorm);
+            tq1 = new TermQuery(term1);
+
+            String queryBirdNorm = analyzer.normalize("fieldName?", queryBird).utf8ToString();
+            Term term2 = new Term(Constants.lyrics, queryBirdNorm);
+            tq2 = new TermQuery(term2);
+
+            BooleanQuery.Builder bq = new BooleanQuery.Builder();
+            bq.add(tq1, BooleanClause.Occur.SHOULD);
+            bq.add(tq2, BooleanClause.Occur.SHOULD);
+            bq.setMinimumNumberShouldMatch(1);
+
+            printResultsForQuery(indexSearcher, bq.build());
+        }
+
+        // TODO build a fuzzy query for a word "mamml" (use FuzzyQuerry).
+        // Find all documents that contain words which are similar to "mamml".
+        // Which documents have been found?
+        {
+            // --------------------------------------
+            System.out.println("7) Fuzzy querry (CONTENT): gasolin?");
+            Term fuzzy = new Term(Constants.lyrics, "gasolin");
+            FuzzyQuery fq = new FuzzyQuery(fuzzy);
+            printResultsForQuery(indexSearcher, fq);
+            // --------------------------------------
+        }
+
+        // TODO now, use QueryParser to parse human-entered query strings
+        // and generate query object.
+        // - use AND, OR , NOT, (, ), + (must), and - (must not) to construct boolean queries
+        // - use * and ? to contstruct wildcard queries
+        // - use ~ to construct fuzzy (one word, similarity) or proximity (at least two words) queries
+        // - use - to construct proximity queries
+        // - use \ as an escape character for: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+        // Consider following 5 examples of queries:
+        //String queryP1 = "MaMMal AND bat";
+        //String queryP2 = "ante*";
+        //String queryP3 = "brd~ ";
+        String queryP4 = "(\"fuck you\"~10) OR bat";
+        String queryP5 = "(\"God bless your soul\"~10) OR (\"are loved\"~10)";
+        // Select some query:
+        String selectedQuery = queryP5;
+        // Complete the code here, i.e., build query parser object, parse selected query
+        // to query object, and find relevant documents. Analyze the outcomes.
+        {
+            // --------------------------------------
+            System.out.println("8) query parser = " + selectedQuery);
+            try {
+                QueryParser qp = new QueryParser(Constants.lyrics, analyzer);
+                Query q = qp.parse(selectedQuery);
+                printResultsForQuery(indexSearcher, q);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            // --------------------------------------
+        }
+
+
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void printResultsForQuery(IndexSearcher indexSearcher, Query q)
-    {
+    private static void printResultsForQuery(IndexSearcher indexSearcher, Query q) {
         // TODO finish this method
         // - use indexSearcher to search for documents that
         // are relevant according to the query q
@@ -208,15 +299,12 @@ public class Searcher
         // --------------------------------
     }
 
-    private static IndexReader getIndexReader()
-    {
-        try
-        {
+    private static IndexReader getIndexReader() {
+        try {
             Directory dir = FSDirectory.open(Paths.get(Constants.index_dir));
             return DirectoryReader.open(dir);
 
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;

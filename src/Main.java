@@ -6,7 +6,7 @@ public class Main {
         JsonReader.getInstance().loadData("songfile.json");
         ArrayList<Song> songs = JsonReader.getInstance().getSongs();
         for(Song s : songs) {
-            System.out.println(s.getTitle());
+            System.out.println(s.toString());
         }
     }
 }
