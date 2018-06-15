@@ -25,7 +25,7 @@ public class Searcher {
     private final static String conjunction = "AND";
 
     public static void main(String args[]) {
-        searchResultsForQuery("cat");
+        searchResultsForQuery("love");
     }
 
     private static String expandWithSynonyms(String query) {
@@ -73,7 +73,7 @@ public class Searcher {
         try {
             QueryParser qp = new QueryParser(Constants.lyrics, analyzer);
             Query q = qp.parse(selectedQuery);
-            printResultsForQuery(indexSearcher, q, language);
+            printResultsForQuery(indexSearcher, q, language, query);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -87,12 +87,12 @@ public class Searcher {
 
     }
 
-    private static void printResultsForQuery(IndexSearcher indexSearcher, Query q, String language) {
+    private static void printResultsForQuery(IndexSearcher indexSearcher, Query q, String language, String original) {
         try {
             TopDocs topDocs = indexSearcher.search(q, Constants.top_docs);
             for (ScoreDoc sd : topDocs.scoreDocs) {
                 Document doc = indexSearcher.doc(sd.doc);
-                if (!doc.get(Constants.language).equals(language)) {
+                if (!doc.get(Constants.language).equals(language) && original.split(" ").length > 1) {
                     System.err.println("Languages are not the same!");
                     System.err.println("Got " + language + " and " + doc.get(Constants.language));
                 }

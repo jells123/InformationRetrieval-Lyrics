@@ -82,13 +82,12 @@ public class WordNet {
                 IndexWord baseForm = null;
 
                 try {
-                    System.out.println(posTags[i]);
                     if (posTags[i].startsWith("V"))
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.VERB, keyword);
                     else if (posTags[i].startsWith("N"))
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.NOUN, keyword);
                     else
-                        System.err.println("Huston, we've got a problem.");
+                        System.err.println("Huston, we've got a problem: " + posTags[i]);
 
                     HashSet<String> synonyms = new HashSet<>();
 
