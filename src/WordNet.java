@@ -23,9 +23,11 @@ public class WordNet {
 
     private static String TOKENIZER_MODEL = "models/en-token.bin";
     private static String POS_MODEL = "models/en-pos-maxent.bin";
+    public static String LEMMATIZER_DICT = "models/en-lemmatizer.dict";
 
     private TokenizerModel _tokenizerModel;
     private POSModel _posModel;
+    private DictionaryLemmatizer _lemmatizer;
 
     public WordNet() {
         try {
@@ -43,21 +45,24 @@ public class WordNet {
             this._tokenizerModel = new TokenizerModel(modelFile);
             modelFile = new File(POS_MODEL);
             this._posModel = new POSModel(modelFile);
+            modelFile = new File(LEMMATIZER_DICT);
+            this._lemmatizer = new DictionaryLemmatizer(modelFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String[] processQuery(String query) {
+    private String[] processQuery(String[] tokens) {
         POSTaggerME pt = new POSTaggerME(this._posModel);
-        String[] normalizeText = Normalizer.getInstance().normalizeText(query);
-        return pt.tag(normalizeText);
+        String[] tags = pt.tag(tokens);
+        String[] lemmatize = _lemmatizer.lemmatize(tokens, tags);
+        return pt.tag(lemmatize);
     }
 
     public HashMap<String, ArrayList<String>> getSimilarWords(String query) {
         TokenizerME tok = new TokenizerME(this._tokenizerModel);
         String[] tokens = tok.tokenize(query);
-        String[] posTags = processQuery(query);
+        String[] posTags = processQuery(tokens);
 
         Set<String> uniqueTerms_Set = new HashSet<>();
         HashMap<String, ArrayList<String>> synonymsMap = new HashMap<>();
@@ -77,6 +82,7 @@ public class WordNet {
                 IndexWord baseForm = null;
 
                 try {
+                    System.out.println(posTags[i]);
                     if (posTags[i].startsWith("V"))
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.VERB, keyword);
                     else if (posTags[i].startsWith("N"))

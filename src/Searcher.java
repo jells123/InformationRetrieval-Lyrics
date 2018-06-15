@@ -24,8 +24,7 @@ public class Searcher {
     private final static String conjunction = "AND";
 
     public static void main(String args[]) {
-        //searchResultsForQuery("Wir sind nett Leute");
-        searchResultsForQuery("chamber");
+        searchResultsForQuery("girl with red hair");
     }
 
     private static String expandWithSynonyms(String query) {
