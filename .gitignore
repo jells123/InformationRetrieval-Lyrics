@@ -1,0 +1,17 @@
+.idea/*
+index/*
+lucene-7.2.1/*
+out/*
+pages/*
+Lucene.iml
+lucene-backward-codecs-7.2.1.jar
+lucene-core-7.2.1.jar
+lucene-queryparser-7.2.1.jar
+tika-app-1.17.jar
+en-token.bin
+libs/*
+wn3.1.dict/*
+models/*
+SongExtacter/.idea/*
+SongExtacter/__pycache__/*
+SongExtacter/songs/songfile*
