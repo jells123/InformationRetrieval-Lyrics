@@ -13,3 +13,5 @@ libs/*
 wn3.1.dict/*
 models/*
 SongExtacter/.idea/*
+SongExtacter/__pycache__/*
+SongExtacter/songs/songfile*
