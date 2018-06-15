@@ -38,8 +38,8 @@ public class JsonReader {
         for (Object song : jsonSongs) {
             JSONObject jsonSong = (JSONObject) song;
             songs.add(new Song(jsonSong.get("title").toString(),jsonSong.get("artist").toString(),
-                    jsonSong.get("lyric").toString(), jsonSong.get("country").toString(),
-                    jsonSong.get("province").toString(), jsonSong.get("city").toString()));
+                    Normalizer.getInstance().concatenate(Normalizer.getInstance().normalizeText(jsonSong.get("lyric").toString())),
+                    jsonSong.get("country").toString(), jsonSong.get("province").toString(), jsonSong.get("city").toString()));
         }
     }
 

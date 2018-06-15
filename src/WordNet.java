@@ -21,13 +21,11 @@ public class WordNet {
     private Dictionary _wordnetDictionary;
     private static final String DICT_PATH = "wn3.1.dict/dict";
 
-    public static String TOKENIZER_MODEL = "models/en-token.bin";
-    public static String POS_MODEL = "models/en-pos-maxent.bin";
-    public static String LEMMATIZER_DICT = "models/en-lemmatizer.dict";
+    private static String TOKENIZER_MODEL = "models/en-token.bin";
+    private static String POS_MODEL = "models/en-pos-maxent.bin";
 
     private TokenizerModel _tokenizerModel;
     private POSModel _posModel;
-    private DictionaryLemmatizer _lemmatizer;
 
     public WordNet() {
         try {
@@ -45,24 +43,21 @@ public class WordNet {
             this._tokenizerModel = new TokenizerModel(modelFile);
             modelFile = new File(POS_MODEL);
             this._posModel = new POSModel(modelFile);
-            modelFile = new File(LEMMATIZER_DICT);
-            this._lemmatizer = new DictionaryLemmatizer(modelFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private String[] processQuery(String[] tokens) {
+    private String[] processQuery(String query) {
         POSTaggerME pt = new POSTaggerME(this._posModel);
-        String[] tags = pt.tag(tokens);
-        String[] lemmatize = _lemmatizer.lemmatize(tokens, tags);
-        return pt.tag(lemmatize);
+        String[] normalizeText = Normalizer.getInstance().normalizeText(query);
+        return pt.tag(normalizeText);
     }
 
     public HashMap<String, ArrayList<String>> getSimilarWords(String query) {
         TokenizerME tok = new TokenizerME(this._tokenizerModel);
         String[] tokens = tok.tokenize(query);
-        String[] posTags = processQuery(tokens);
+        String[] posTags = processQuery(query);
 
         Set<String> uniqueTerms_Set = new HashSet<>();
         HashMap<String, ArrayList<String>> synonymsMap = new HashMap<>();

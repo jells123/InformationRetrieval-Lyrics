@@ -21,14 +21,36 @@ import java.util.Map;
 
 public class Searcher {
 
-    private final static String conjunction = "OR";
+    private final static String conjunction = "AND";
 
     public static void main(String args[]) {
         //searchResultsForQuery("Wir sind nett Leute");
-        searchResultsForQuery("girl with red hair");
+        searchResultsForQuery("chamber");
     }
 
-    public static void searchResultsForQuery(String query) {
+    private static String expandWithSynonyms(String query) {
+        WordNet wordNet = new WordNet();
+        HashMap<String, ArrayList<String>> words = wordNet.getSimilarWords(query);
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Map.Entry<String, ArrayList<String>> entry : words.entrySet()) {
+            String keyword = entry.getKey();
+            ArrayList<String> synonyms = entry.getValue();
+            sb.append("(\"").append(keyword).append("\" OR \"");
+
+            for (String s : synonyms) {
+                sb.append(s).append("\" OR \"");
+            }
+            sb.delete(sb.toString().length() - 6, sb.toString().length() - 1);
+            sb.append(") " + conjunction + " ");
+        }
+        sb.delete(sb.toString().length() - 4, sb.toString().length() - 1);
+
+        return sb.toString();
+    }
+
+    private static void searchResultsForQuery(String query) {
         MyLanguageDetector.initModel();
         Language[] predictLanguages = MyLanguageDetector.get_languageDetector().predictLanguages(query);
         String language = predictLanguages[0].getLang();
@@ -41,25 +63,7 @@ public class Searcher {
         IndexSearcher indexSearcher = new IndexSearcher(reader);
 
         if(language.equals("eng")) {
-            WordNet wordNet = new WordNet();
-            HashMap<String, ArrayList<String>> words = wordNet.getSimilarWords(query);
-
-            StringBuilder sb = new StringBuilder();
-
-            for (Map.Entry<String, ArrayList<String>> entry : words.entrySet()) {
-                String keyword = entry.getKey();
-                ArrayList<String> synonyms = entry.getValue();
-                sb.append("(\"").append(keyword).append("\" OR \"");
-
-                for (String s : synonyms) {
-                    sb.append(s).append("\" OR \"");
-                }
-                sb.delete(sb.toString().length() - 6, sb.toString().length() - 1);
-                sb.append(") " + conjunction + " ");
-            }
-            sb.delete(sb.toString().length() - 4, sb.toString().length() - 1);
-
-            selectedQuery = sb.toString();
+            selectedQuery = expandWithSynonyms(query);
         } else {
             System.out.println("It's not a query in English!\nTrying to find results without synonyms.");
         }
@@ -88,15 +92,14 @@ public class Searcher {
             TopDocs topDocs = indexSearcher.search(q, Constants.top_docs);
             for (ScoreDoc sd : topDocs.scoreDocs) {
                 Document doc = indexSearcher.doc(sd.doc);
-                if (doc.get(Constants.language).equals(language)) {
-                    System.out.format("%f: %s (Id=%s) (Artist=%s) (Location=%s, %s, %s) (Size=%sb)\n",
-                            sd.score, doc.get(Constants.songname), doc.get(Constants.id),
-                            doc.get(Constants.songartist), doc.get(Constants.country), doc.get(Constants.province),
-                            doc.get(Constants.city), doc.get(Constants.songsize));
-                } else {
+                if (!doc.get(Constants.language).equals(language)) {
                     System.err.println("Languages are not the same!");
                     System.err.println("Got " + language + " and " + doc.get(Constants.language));
                 }
+                System.out.format("%f: %s (Id=%s) (Artist=%s) (Location=%s, %s, %s) (Size=%sb)\n",
+                        sd.score, doc.get(Constants.songname), doc.get(Constants.id),
+                        doc.get(Constants.songartist), doc.get(Constants.country), doc.get(Constants.province),
+                        doc.get(Constants.city), doc.get(Constants.songsize));
             }
             if(topDocs.scoreDocs.length == 0) System.err.println("Couldn't find anything relevant, sorry :(");
         } catch (IOException e) {
