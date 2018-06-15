@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Searcher {
@@ -24,18 +25,18 @@ public class Searcher {
     private final static String conjunction = "AND";
 
     public static void main(String args[]) {
-        searchResultsForQuery("girl with red hair");
+        searchResultsForQuery("cat");
     }
 
     private static String expandWithSynonyms(String query) {
         WordNet wordNet = new WordNet();
-        HashMap<String, ArrayList<String>> words = wordNet.getSimilarWords(query);
+        HashMap<String, HashSet<String>> words = wordNet.getSimilarWords(query);
 
         StringBuilder sb = new StringBuilder();
 
-        for (Map.Entry<String, ArrayList<String>> entry : words.entrySet()) {
+        for (Map.Entry<String, HashSet<String>> entry : words.entrySet()) {
             String keyword = entry.getKey();
-            ArrayList<String> synonyms = entry.getValue();
+            HashSet<String> synonyms = entry.getValue();
             sb.append("(\"").append(keyword).append("\" OR \"");
 
             for (String s : synonyms) {
@@ -61,7 +62,7 @@ public class Searcher {
         assert reader != null;
         IndexSearcher indexSearcher = new IndexSearcher(reader);
 
-        if(language.equals("eng")) {
+        if(language.equals("eng") || query.split(" ").length == 1) {
             selectedQuery = expandWithSynonyms(query);
         } else {
             System.out.println("It's not a query in English!\nTrying to find results without synonyms.");
