@@ -1,7 +1,7 @@
 from SongExtracter import SongExtracter
 import json
 from sys import stdout
-songCount =10
+songCount = 30
 songs =[]
 se = SongExtracter()
 ctr=0
@@ -18,5 +18,5 @@ while(len(songs)!=songCount):
 
 jsonSting = json.dumps(songs)
 
-with open("songs/songfile.txt",'w+') as f:
+with open("songs/songfile.json",'w+') as f:
     f.write(jsonSting)
