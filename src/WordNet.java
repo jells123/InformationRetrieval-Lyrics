@@ -59,13 +59,13 @@ public class WordNet {
         return pt.tag(lemmatize);
     }
 
-    public HashMap<String, ArrayList<String>> getSimilarWords(String query) {
+    public HashMap<String, HashSet<String>> getSimilarWords(String query) {
         TokenizerME tok = new TokenizerME(this._tokenizerModel);
         String[] tokens = tok.tokenize(query);
         String[] posTags = processQuery(tokens);
 
         Set<String> uniqueTerms_Set = new HashSet<>();
-        HashMap<String, ArrayList<String>> synonymsMap = new HashMap<>();
+        HashMap<String, HashSet<String>> synonymsMap = new HashMap<>();
 
         System.out.println("Original keywords: ");
         for (String i : tokens)
@@ -89,7 +89,7 @@ public class WordNet {
                     else
                         System.err.println("Huston, we've got a problem.");
 
-                    ArrayList<String> synonyms = new ArrayList<>();
+                    HashSet<String> synonyms = new HashSet<>();
 
                     if (baseForm != null) {
                         for (Synset s : baseForm.getSenses()) {

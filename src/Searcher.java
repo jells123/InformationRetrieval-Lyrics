@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Searcher {
@@ -28,7 +29,7 @@ public class Searcher {
         searchResultsForQuery("motherfucker kills little puppies");
     }
 
-    public static void searchResultsForQuery(String query) {
+    private static void searchResultsForQuery(String query) {
         MyLanguageDetector.initModel();
         Language[] predictLanguages = MyLanguageDetector.get_languageDetector().predictLanguages(query);
         String language = predictLanguages[0].getLang();
@@ -42,13 +43,13 @@ public class Searcher {
 
         if(language.equals("eng")) {
             WordNet wordNet = new WordNet();
-            HashMap<String, ArrayList<String>> words = wordNet.getSimilarWords(query);
+            HashMap<String, HashSet<String>> words = wordNet.getSimilarWords(query);
 
             StringBuilder sb = new StringBuilder();
 
-            for (Map.Entry<String, ArrayList<String>> entry : words.entrySet()) {
+            for (Map.Entry<String, HashSet<String>> entry : words.entrySet()) {
                 String keyword = entry.getKey();
-                ArrayList<String> synonyms = entry.getValue();
+                HashSet<String> synonyms = entry.getValue();
                 sb.append("(\"").append(keyword).append("\" OR \"");
 
                 for (String s : synonyms) {
