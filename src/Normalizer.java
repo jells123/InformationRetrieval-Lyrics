@@ -56,7 +56,7 @@ public class Normalizer {
         }
         return words.toArray(new String[0]);
     }
-    private static removeStopWords(String[] tab){
+    private static String[] removeStopWords(String[] tab){
         ArrayList<String> words = new ArrayList<>();
         for (String i : tab) {
             if (this._StopWordsRemover.isStopWord(i)==false) {
