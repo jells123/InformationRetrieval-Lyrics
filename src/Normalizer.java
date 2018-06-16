@@ -59,7 +59,7 @@ public class Normalizer {
     private static String[] removeStopWords(String[] tab){
         ArrayList<String> words = new ArrayList<>();
         for (String i : tab) {
-            if (this._StopWordsRemover.isStopWord(i)==false) {
+            if (_StopWordsRemover.isStopWord(i)==false) {
                 words.add(i);
             }
         }
