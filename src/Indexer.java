@@ -41,7 +41,7 @@ public class Indexer {
 
     public ArrayList<Document> getJsonDocuments() {
 //        JsonReader.getInstance().loadData("songfile.json");
-        JsonReader.getInstance().loadData("songfile_200.json");
+        JsonReader.getInstance().loadData("songfile.json");
         ArrayList<Song> songs = JsonReader.getInstance().getSongs();
 
         ArrayList<Document> documents = new ArrayList<>(songs.size());

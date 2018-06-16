@@ -30,8 +30,12 @@ public class Searcher {
     private final static String conjunction = "AND";
 
     public static void main(String args[]) {
-        String query = "love";
-        System.out.println(query);
+        String query = "lovely cake for breakfast";
+        System.out.println("Query: " + query);
+
+        String synonyms = getSynonyms(query, 3);
+        query = expandWithSynonyms(query, 3);
+        System.out.println("Add synonyms: " + query);
 
         try {
             Indexer indexer = new Indexer();
@@ -48,9 +52,13 @@ public class Searcher {
             }
             QueryExpansion qExp = new QueryExpansion(songDocuments);
             query = qExp.expandQuery(query);
-
-            query = expandWithSynonyms(query, Constants.SYNONYMS_COUNT);
-            System.out.println(query);
+            query = expandWithSynonyms(query, 2);
+            for (String s : synonyms.split("\\s+")) {
+                if (!query.contains(s)) {
+                    query += s + " ";
+                }
+            }
+            System.out.println("QueryExp + another synonyms: " + query);
             searchResultsForQuery(query);
         } catch (IOException e) {
             e.printStackTrace();
@@ -66,38 +74,66 @@ public class Searcher {
         StringBuilder sb = new StringBuilder();
         HashSet<String> wordsSet = new HashSet<>();
 
-        for (String substring : query.split("\\s+"))
+        for (String substring : query.split("\\s+")) {
             wordsSet.add(substring);
+        }
 
         for (Map.Entry<String, HashSet<String>> entry : words.entrySet()) {
             String keyword = entry.getKey();
             wordsSet.add(keyword);
-            sb.append("(\"").append(keyword).append("\" OR \"");
+//            sb.append("(\"").append(keyword).append("\" OR \"");
 
-            wordsSet = new HashSet<>();
+            int tmpSize = wordsSet.size();
             HashSet<String> synonyms = entry.getValue();
             for (String s : synonyms) {
                 for (String substring : s.split("\\s+")) {
-                    if (wordsSet.size() < synonymsCount) {
+                    if (wordsSet.size() < tmpSize + synonymsCount) {
                         wordsSet.add(substring);
-                        sb.append(s).append("\" OR \"");
+//                        sb.append(s).append("\" OR \"");
                     }
                 }
             }
-            sb.delete(sb.toString().length() - 6, sb.toString().length() - 1);
-            sb.append(") " + conjunction + " ");
+//            sb.delete(sb.toString().length() - 6, sb.toString().length() - 1);
+//            sb.append(") " + conjunction + " ");
         }
-        sb.delete(sb.toString().length() - 4, sb.toString().length() - 1);
+//        sb.delete(sb.toString().length() - 4, sb.toString().length() - 1);
 
-//        for (String s : wordsSet) {
-//            sb.append(s).append(" ");
-//        }
-        System.out.println(sb.toString());
+        for (String s : wordsSet) {
+            sb.append(s).append(" ");
+        }
         return sb.toString();
 //        return wordsSet;
     }
 
-    private static String expandWithSynonymsGetQuery(String query) {
+    private static String getSynonyms(String query, int synonymsCount) {
+        WordNet wordNet = new WordNet();
+        HashMap<String, HashSet<String>> words = wordNet.getSimilarWords(query);
+
+        int counter = 0;
+        StringBuilder sb = new StringBuilder();
+        HashSet<String> wordsSet = new HashSet<>();
+
+        for (Map.Entry<String, HashSet<String>> entry : words.entrySet()) {
+            String keyword = entry.getKey();
+
+            int tmpSize = wordsSet.size();
+            HashSet<String> synonyms = entry.getValue();
+            for (String s : synonyms) {
+                for (String substring : s.split("\\s+")) {
+                    if (wordsSet.size() < tmpSize + synonymsCount) {
+                        wordsSet.add(substring);
+                    }
+                }
+            }
+        }
+
+        for (String s : wordsSet) {
+            sb.append(s).append(" ");
+        }
+        return sb.toString();
+    }
+
+    private static String expandWithSynonymsGetQuery(String query, int synonymsCount) {
         WordNet wordNet = new WordNet();
         HashMap<String, HashSet<String>> words = wordNet.getSimilarWords(query);
 
