@@ -1,3 +1,4 @@
+import engine.SongDocument;
 import opennlp.tools.langdetect.Language;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -13,6 +14,10 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import search.QueryExpansion;
+import search.Score;
+import search.WordNet;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,10 +30,74 @@ public class Searcher {
     private final static String conjunction = "AND";
 
     public static void main(String args[]) {
-        searchResultsForQuery("love");
+        String query = "love";
+        System.out.println(query);
+
+        try {
+            Indexer indexer = new Indexer();
+            ArrayList<Document> documents = indexer.getJsonDocuments();
+            ArrayList<SongDocument> songDocuments = new ArrayList<SongDocument>();
+            for (Document doc : documents) {
+                songDocuments.add(new SongDocument(
+                        doc.get(Constants.songname),
+                        doc.get(Constants.lyrics),
+                        doc.get(Constants.songartist),
+                        doc.get(Constants.country),
+                        Integer.parseInt(doc.get(Constants.id))
+                ));
+            }
+            QueryExpansion qExp = new QueryExpansion(songDocuments);
+            query = qExp.expandQuery(query);
+
+            query = expandWithSynonyms(query, Constants.SYNONYMS_COUNT);
+            System.out.println(query);
+            searchResultsForQuery(query);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        ArrayList<Score> scores =
     }
 
-    private static String expandWithSynonyms(String query) {
+    private static String expandWithSynonyms(String query, int synonymsCount) {
+        WordNet wordNet = new WordNet();
+        HashMap<String, HashSet<String>> words = wordNet.getSimilarWords(query);
+
+        int counter = 0;
+        StringBuilder sb = new StringBuilder();
+        HashSet<String> wordsSet = new HashSet<>();
+
+        for (String substring : query.split("\\s+"))
+            wordsSet.add(substring);
+
+        for (Map.Entry<String, HashSet<String>> entry : words.entrySet()) {
+            String keyword = entry.getKey();
+            wordsSet.add(keyword);
+            sb.append("(\"").append(keyword).append("\" OR \"");
+
+            wordsSet = new HashSet<>();
+            HashSet<String> synonyms = entry.getValue();
+            for (String s : synonyms) {
+                for (String substring : s.split("\\s+")) {
+                    if (wordsSet.size() < synonymsCount) {
+                        wordsSet.add(substring);
+                        sb.append(s).append("\" OR \"");
+                    }
+                }
+            }
+            sb.delete(sb.toString().length() - 6, sb.toString().length() - 1);
+            sb.append(") " + conjunction + " ");
+        }
+        sb.delete(sb.toString().length() - 4, sb.toString().length() - 1);
+
+//        for (String s : wordsSet) {
+//            sb.append(s).append(" ");
+//        }
+        System.out.println(sb.toString());
+        return sb.toString();
+//        return wordsSet;
+    }
+
+    private static String expandWithSynonymsGetQuery(String query) {
         WordNet wordNet = new WordNet();
         HashMap<String, HashSet<String>> words = wordNet.getSimilarWords(query);
 
@@ -63,7 +132,8 @@ public class Searcher {
         IndexSearcher indexSearcher = new IndexSearcher(reader);
 
         if(language.equals("eng") || query.split(" ").length == 1) {
-            selectedQuery = expandWithSynonyms(query);
+//            selectedQuery = expandWithSynonyms(query, 3);
+            selectedQuery = selectedQuery;
         } else {
             System.out.println("It's not a query in English!\nTrying to find results without synonyms.");
         }
@@ -77,7 +147,6 @@ public class Searcher {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
 
         try {
             reader.close();

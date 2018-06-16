@@ -14,4 +14,5 @@ public class Constants
     public static final String language = "language";
     public static final String index_dir = "index";
     public static final int top_docs = 15;
+    public static final int SYNONYMS_COUNT = 5;
 }

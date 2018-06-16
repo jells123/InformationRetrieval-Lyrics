@@ -1,3 +1,5 @@
+package search;
+
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -67,25 +69,28 @@ public class WordNet {
         Set<String> uniqueTerms_Set = new HashSet<>();
         HashMap<String, HashSet<String>> synonymsMap = new HashMap<>();
 
-        System.out.println("Original keywords: ");
-        for (String i : tokens)
-            System.out.println("   keyword=" + i);
-        System.out.println("");
-        System.out.println("Suggesting other keywords: ");
+//        System.out.println("Original keywords: ");
+//        for (String i : tokens)
+//            System.out.println("   keyword=" + i);
+//        System.out.println("");
+//        System.out.println("Suggesting other keywords: ");
 
         for (int i = 0; i < tokens.length; i++) {
             if (!uniqueTerms_Set.contains(tokens[i])) {
                 String keyword = tokens[i];
                 uniqueTerms_Set.add(keyword);
 
-                System.out.println("   for the keyword = " + keyword + ": ");
+//                System.out.println("   for the keyword = " + keyword + ": ");
                 IndexWord baseForm = null;
 
                 try {
+                    System.out.println(posTags[i]);
                     if (posTags[i].startsWith("V"))
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.VERB, keyword);
                     else if (posTags[i].startsWith("N"))
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.NOUN, keyword);
+                    else if (posTags[i].startsWith("UH"))
+                        baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.VERB, keyword);
                     else
                         System.err.println("Huston, we've got a problem: " + posTags[i]);
 
@@ -94,7 +99,7 @@ public class WordNet {
                     if (baseForm != null) {
                         for (Synset s : baseForm.getSenses()) {
                             for (Word w : s.getWords()) {
-                                System.out.println("        " + w.getLemma());
+//                                System.out.println("        " + w.getLemma());
                                 synonyms.add(w.getLemma());
                             }
                         }
