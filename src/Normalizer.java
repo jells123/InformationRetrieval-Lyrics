@@ -19,6 +19,7 @@ public class Normalizer {
     private static TokenizerModel _tokenizerModel;
     private static POSModel _posModel;
     private static DictionaryLemmatizer _lemmatizer;
+    private static StopWordsRemover _StopWordsRemover;
 
     private static Normalizer instance = null;
 
@@ -40,6 +41,7 @@ public class Normalizer {
             this._posModel = new POSModel(modelFile);
             modelFile = new File(LEMMATIZER_DICT);
             this._lemmatizer = new DictionaryLemmatizer(modelFile);
+            this._StopWordsRemover = new StopWordsRemover();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,6 +51,15 @@ public class Normalizer {
         ArrayList<String> words = new ArrayList<>();
         for (String i : tab) {
             if (!i.equals(word)) {
+                words.add(i);
+            }
+        }
+        return words.toArray(new String[0]);
+    }
+    private static removeStopWords(String[] tab){
+        ArrayList<String> words = new ArrayList<>();
+        for (String i : tab) {
+            if (this._StopWordsRemover.isStopWord(i)==false) {
                 words.add(i);
             }
         }
