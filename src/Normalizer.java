@@ -72,7 +72,8 @@ public class Normalizer {
         POSTaggerME pt = new POSTaggerME(_posModel);
         String[] tags = pt.tag(tokens);
         String[] lemmatize = _lemmatizer.lemmatize(tokens, tags);
-        return removeFromList(lemmatize, "O");
+        String[] noStopWords = removeStopWords(lemmatize);
+        return removeFromList(noStopWords, "O");
     }
 
     public String concatenate(String[] normalized) {
