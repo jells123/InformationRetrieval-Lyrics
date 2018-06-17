@@ -1,4 +1,3 @@
-package search;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
@@ -91,6 +90,8 @@ public class WordNet {
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.NOUN, keyword);
                     else if (posTags[i].startsWith("UH"))
                         baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.VERB, keyword);
+                    else if (posTags[i].equals("JJ"))
+                        baseForm = _wordnetDictionary.getMorphologicalProcessor().lookupBaseForm(POS.ADJECTIVE, keyword);
                     else
                         System.err.println("Huston, we've got a problem: " + posTags[i]);
 
